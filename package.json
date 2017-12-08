@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "lite-server",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "truffle compile"
+    "compile": "truffle compile",
+    "migrate-ganache": "truffle migrate --network ganache"
     
   },
   "author": "",
