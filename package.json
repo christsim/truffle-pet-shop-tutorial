@@ -8,10 +8,9 @@
   },
   "scripts": {
     "dev": "lite-server",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "truffle compile",
-    "migrate-ganache": "truffle migrate --network ganache"
-    
+    "migrate-ganache": "truffle migrate --network ganache",
+    "test": "truffle test --network ganache"
   },
   "author": "",
   "license": "ISC",
