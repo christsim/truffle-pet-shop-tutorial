@@ -2,13 +2,13 @@ App = {
   web3Provider: null,
   contracts: {},
 
-  init: function() {
+  init: function () {
     // Load pets.
-    $.getJSON('../pets.json', function(data) {
+    $.getJSON('../pets.json', function (data) {
       var petsRow = $('#petsRow');
       var petTemplate = $('#petTemplate');
 
-      for (i = 0; i < data.length; i ++) {
+      for (i = 0; i < data.length; i++) {
         petTemplate.find('.panel-title').text(data[i].name);
         petTemplate.find('img').attr('src', data[i].picture);
         petTemplate.find('.pet-breed').text(data[i].breed);
@@ -23,46 +23,99 @@ App = {
     return App.initWeb3();
   },
 
-  initWeb3: function() {
-    /*
-     * Replace me...
-     */
+  initWeb3: function () {
+    // check for web3 that has been injected already
+    if (typeof web3 !== 'undefined') {
+      App.web3Provider = web3.currentProvider;
+    } else {
+      // don't do this kak in prod
+      // If no injected web3 instace is detected, fallback to the testrpc
+      App.web3Providers.HttpProvider('http://localhost:7545'); // Ganache
+      //      App.web3Providers.HttpProvider('http://localhost:8545');  // Truffle
+    }
 
     return App.initContract();
   },
 
-  initContract: function() {
-    /*
-     * Replace me...
-     */
+  // Artifacts - info about our contract
+  //   ABI - application binary interface.
+  //    functions and variables to interact with our contract
+
+  initContract: function () {
+    $.getJSON('Adoption.json', (data) => {
+      // Get the necessary contract artifact file
+      //  and instantiate it with the truffle-contract
+      var AdoptionArtifact = data;
+      App.contracts.Adoption = TruffleContract(AdoptionArtifact);
+
+      // Set the provider for our contract
+      App.contracts.Adoption.setProvider(App.web3Provider);
+
+      // Use our contract to retrieve and mark the adopted pets
+      return App.markAdopted();
+    });
 
     return App.bindEvents();
   },
 
-  bindEvents: function() {
+  bindEvents: function () {
     $(document).on('click', '.btn-adopt', App.handleAdopt);
   },
 
-  markAdopted: function(adopters, account) {
-    /*
-     * Replace me...
-     */
+  markAdopted: function (adopters, account) {
+    var adoptionInstance;
+
+    App.contracts.Adoption.deployed().then((instance) => {
+      adoptionInstance = instance;
+
+      return adoptionInstance.getAdopters.call();
+    }).then((adopters) => {
+      for (i = 0; i < adopters.length; i++) {
+        // arrays are initialized with 0x0 not null in solidity
+        if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
+          $('.panel-pet')
+            .eq(i)
+            .find('button')
+            .text('Success')
+            .attr('disabled', true);
+        }
+      }
+    }).catch((err) => console.log(err.message));
   },
 
-  handleAdopt: function(event) {
+  handleAdopt: function (event) {
     event.preventDefault();
 
     var petId = parseInt($(event.target).data('id'));
 
-    /*
-     * Replace me...
-     */
+    var adoptionInstance;
+
+    web3.eth.getAccounts((error, accounts) => {
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+
+      var account = accounts[0];
+
+      App.contracts.Adoption.deployed()
+        .then((instance) => {
+          adoptionInstance = instance;
+
+          // execute adopt as a transaction by sending account
+          return adoptionInstance.adopt(petId, {
+              from: account
+            })
+            .then((result) => App.markAdopted())
+            .catch((err) => console.log(err.message))
+        })
+    })
   }
 
 };
 
-$(function() {
-  $(window).load(function() {
+$(function () {
+  $(window).load(function () {
     App.init();
   });
 });
