@@ -22,6 +22,14 @@ contract Adoption {
     return adopters;
   }
 
-  
+  function disown(uint petId) public returns (uint) {
+    require(petId >= 0 && petId <= 15);
+    // make sure this owner owns the pet
+    require(adopters[petId] == msg.sender);
+
+    adopters[petId] = 0x0;
+
+    return petId;
+  }
 
 }

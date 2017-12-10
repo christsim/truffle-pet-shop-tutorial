@@ -4,7 +4,7 @@ App = {
 
   init: function () {
     // Load pets.
-    $.getJSON('../pets.json', function (data) {
+    $.getJSON('../pets.json', (data) => {
       var petsRow = $('#petsRow');
       var petTemplate = $('#petTemplate');
 
@@ -15,6 +15,7 @@ App = {
         petTemplate.find('.pet-age').text(data[i].age);
         petTemplate.find('.pet-location').text(data[i].location);
         petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
+        petTemplate.find('.btn-disown').attr('data-id', data[i].id);
 
         petsRow.append(petTemplate.html());
       }
@@ -60,27 +61,34 @@ App = {
 
   bindEvents: function () {
     $(document).on('click', '.btn-adopt', App.handleAdopt);
+    $(document).on('click', '.btn-disown', App.handleDisown);
   },
 
-  markAdopted: function (adopters, account) {
-    var adoptionInstance;
+  markAdopted: async(adopters, account) => {
+    try {
+      var adoptionInstance = await App.contracts.Adoption.deployed();
 
-    App.contracts.Adoption.deployed().then((instance) => {
-      adoptionInstance = instance;
+      var adopters = await adoptionInstance.getAdopters.call();
 
-      return adoptionInstance.getAdopters.call();
-    }).then((adopters) => {
       for (i = 0; i < adopters.length; i++) {
         // arrays are initialized with 0x0 not null in solidity
         if (adopters[i] !== '0x0000000000000000000000000000000000000000') {
           $('.panel-pet')
             .eq(i)
-            .find('button')
-            .text('Success')
+            .find('button.btn-adopt')
+            .text('Owned')
+            .attr('disabled', true);
+        } else {
+          $('.panel-pet')
+            .eq(i)
+            .find('button.btn-disown')
+            .text('Not owned')
             .attr('disabled', true);
         }
       }
-    }).catch((err) => console.log(err.message));
+    } catch (err) {
+      console.log(err.message);
+    }
   },
 
   handleAdopt: function (event) {
@@ -88,9 +96,7 @@ App = {
 
     var petId = parseInt($(event.target).data('id'));
 
-    var adoptionInstance;
-
-    web3.eth.getAccounts((error, accounts) => {
+    web3.eth.getAccounts(async(error, accounts) => {
       if (error) {
         console.log(error);
         throw error;
@@ -98,18 +104,45 @@ App = {
 
       var account = accounts[0];
 
-      App.contracts.Adoption.deployed()
-        .then((instance) => {
-          adoptionInstance = instance;
+      try {
+        var instance = await App.contracts.Adoption.deployed();
+        // execute adopt as a transaction by sending account
+        var result = await instance.adopt(petId, {
+          from: account
+        });
 
-          // execute adopt as a transaction by sending account
-          return adoptionInstance.adopt(petId, {
-              from: account
-            })
-            .then((result) => App.markAdopted())
-            .catch((err) => console.log(err.message))
-        })
-    })
+        return await App.markAdopted();
+      } catch (err) {
+        console.log(err.message);
+      }
+    });
+  },
+
+  handleDisown: function (event) {
+    event.preventDefault();
+
+    var petId = parseInt($(event.target).data('id'));
+
+    web3.eth.getAccounts(async(error, accounts) => {
+      if (error) {
+        console.log(error);
+        throw error;
+      }
+
+      var account = accounts[0];
+
+      try {
+        var instance = await App.contracts.Adoption.deployed();
+        // execute adopt as a transaction by sending account
+        var result = await instance.disown(petId, {
+          from: account
+        });
+
+        return await App.markAdopted();
+      } catch (err) {
+        console.log(err.message);
+      }
+    });
   }
 
 };
