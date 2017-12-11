@@ -14,14 +14,14 @@ Issues:
   - To fix the build folder would have to be deleted and everything recompiled.
   
   
-  ``` 
+``` 
   git clone https://github.com/christsim/truffle-pet-shop-tutorial.git 
   cd truffle-pet-shop-tutorial/
   npm install -g truffle
   truffle develop
-  ```
-  -- in a new window
-  ```
+```
+-- in a new window
+```
   npm run compile
   npm run test
   npm run migrate
@@ -35,5 +35,5 @@ Issues:
   
   adopt away
   
-  ```
+```
   
