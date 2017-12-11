@@ -19,16 +19,19 @@ Issues:
   cd truffle-pet-shop-tutorial/
   npm install -g truffle
   truffle develop
-  
+  ```
   -- in a new window
+  ```
   npm run compile
   npm run test
   npm run migrate
+  ```
+  install metamask
   
-  -- install metamask
-   -- use candy maple cake sugar pudding cream honey rich smooth crumble sweet treat
-
+  use candy maple cake sugar pudding cream honey rich smooth crumble sweet treat
+```
   npm run dev
+```
   
   adopt away
   
