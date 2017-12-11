@@ -1,4 +1,4 @@
-#ETHEREUM PET SHOP
+# ETHEREUM PET SHOP
 
 http://truffleframework.com/tutorials/pet-shop
 
