@@ -9,8 +9,10 @@
   "scripts": {
     "dev": "lite-server",
     "compile": "truffle compile",
+    "migrate": "truffle migrate",
     "migrate-ganache": "truffle migrate --network ganache",
-    "test": "truffle test --network ganache"
+    "test": "truffle test",
+    "test-ganache": "truffle test --network ganache"
   },
   "author": "",
   "license": "ISC",
